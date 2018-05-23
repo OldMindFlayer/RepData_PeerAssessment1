@@ -80,16 +80,9 @@ print(steps_per_day, n=3)
 To visualise this dataframe let's make histogramm of total number of staps taken per day:
 
 ```r
-steps_per_day_ggplot <- ggplot(data = steps_per_day, mapping = aes(x = date, y = sum)) + 
-  geom_histogram(stat = "identity", fill = "blue", alpha = 0.3) +
-  labs(x = "Date, month*day", y = "Number of steps, count", title = "Total number of steps taken each day")
-```
-
-```
-## Warning: Ignoring unknown parameters: binwidth, bins, pad
-```
-
-```r
+steps_per_day_ggplot <- ggplot(data = steps_per_day, mapping = aes(x = sum)) + 
+  geom_histogram(fill = "blue", alpha = 0.3, binwidth = 1000) +
+  labs(x = "Total number of steps", y = "Number of days, count", title = "Total number of steps taken each day")
 print(steps_per_day_ggplot)
 ```
 
@@ -108,37 +101,30 @@ print(paste("Mean:", round(mean_steps_per_day, 1), " ", "Median:", median_steps_
 ```
 
 ## What is the average daily activity pattern?
-We will work with dataframe with no missing values, and make new dataframe, that represent total number of steps taken per interval.
+We will work with dataframe with no missing values, and make new dataframe, that represent mean number of steps taken per interval.
 
 ```r
 steps_per_interval <- complete_data %>%
   group_by(f_interval) %>%
-  summarise(sum = sum(steps))
+  summarise(mean = mean(steps))
 print(steps_per_interval, n=3)
 ```
 
 ```
 ## # A tibble: 288 x 2
-##   f_interval   sum
-##   <fct>      <int>
-## 1 0             91
-## 2 5             18
-## 3 10             7
+##   f_interval  mean
+##   <fct>      <dbl>
+## 1 0          1.72 
+## 2 5          0.340
+## 3 10         0.132
 ## # ... with 285 more rows
 ```
-To visualise this dataframe let's make histogramm of total number of staps taken per interval:
+To visualise this dataframe let's make time series plot of mean number of staps taken per interval:
 
 ```r
-steps_per_interval_ggplot <- ggplot(data = steps_per_interval, mapping = aes(x = f_interval, y = sum)) + 
-  geom_histogram(stat = "identity", fill = "red", alpha = 0.3) +
-  labs(x = "Interval of time", y = "Number of steps, count", title = "Total number of steps taken in each 5-minute interval")
-```
-
-```
-## Warning: Ignoring unknown parameters: binwidth, bins, pad
-```
-
-```r
+steps_per_interval_ggplot <- ggplot(data = steps_per_interval, mapping = aes(x = f_interval, y = mean, group = 1)) + 
+    geom_path(colour = "red") +
+    labs(x = "Interval of time", y = "Number of steps, mean", title = "Mean number of steps taken in each 5-minute interval")
 print(steps_per_interval_ggplot)
 ```
 
@@ -147,7 +133,7 @@ print(steps_per_interval_ggplot)
 Interval, which contains, on average, the maximum number of steps:
 
 ```r
-interval_with_max_steps <- as.character(arrange(steps_per_interval, desc(sum))[["f_interval"]][1])
+interval_with_max_steps <- as.character(arrange(steps_per_interval, desc(mean))[["f_interval"]][1])
 print(paste("Interval of maximum:", interval_with_max_steps))
 ```
 
@@ -217,22 +203,15 @@ steps_per_day_filled <- data_filled %>%
   group_by(date) %>%
   summarise(sum = sum(steps_filled))
 
-steps_per_day_filled_ggplot <- ggplot(data = steps_per_day_filled, mapping = aes(x = date, y = sum)) +
-  geom_histogram(stat = "identity", fill = "blue", alpha = 0.3) +
-  labs(x = "Date, month*day", y = "Number of steps, count", title = "Total number of steps taken each day, NA are filled")
-```
-
-```
-## Warning: Ignoring unknown parameters: binwidth, bins, pad
-```
-
-```r
+steps_per_day_filled_ggplot <- ggplot(data = steps_per_day_filled, mapping = aes(x = sum)) +
+  geom_histogram(fill = "blue", alpha = 0.3, binwidth = 1000) +
+  labs(x = "Total number of steps", y = "Number of days, count", title = "Total number of steps taken each day")
 print(steps_per_day_filled_ggplot)
 ```
 
 ![](PA1_template_files/figure-html/unnamed-chunk-14-1.png)<!-- -->
 
-On histogramm there are much fewer days with almost no step count, but there are still some days (e.g. 2012-10-13), where step count is much lower than count on other days.
+On histogramm we can see much more days with about 11000 steps taken.
 
 ```r
 mean_steps_per_day_filled <- mean(steps_per_day_filled$sum)
@@ -289,18 +268,12 @@ steps_per_weekday_interval <- steps_per_weekday %>%
   group_by(f_interval, weekde) %>%
   summarise(mean_steps = mean(steps_filled))
 
-steps_per_interval_filled_week_ggplot <- ggplot(data = steps_per_weekday_interval, mapping = aes(x = f_interval, y = mean_steps, fill = weekde)) +
-  geom_histogram(stat = "identity") +
-  facet_wrap(~ weekde, nrow = 2) +
-  labs(x = "Time of the day, 5 min intervals", y = "Number of steps, count", title = "Number of steps taken in weekdays and weekends") +
-  guides(fill=FALSE)
-```
-
-```
-## Warning: Ignoring unknown parameters: binwidth, bins, pad
-```
-
-```r
+steps_per_interval_filled_week_ggplot <- 
+    ggplot(data = steps_per_weekday_interval, mapping = aes(x = f_interval, y = mean_steps, colour = weekde, group = 1)) +
+    geom_path() +
+    facet_wrap(~ weekde, nrow = 2) +
+    labs(x = "Time of the day, 5 min intervals", y = "Number of steps, count", title = "Number of steps taken in weekdays and weekends") +
+    guides(colour=FALSE)
 print(steps_per_interval_filled_week_ggplot)
 ```
 
